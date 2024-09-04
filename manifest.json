@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Disable YouTube Shorts",
+  "version": "1.0",
+  "description": "An extension to hide YouTube Shorts and redirect Shorts URLs.",
+  "permissions": [
+    "webNavigation",
+    "tabs",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://www.youtube.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "options.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  }
+}
