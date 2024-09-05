@@ -1,15 +1,16 @@
 // options.js
 
+// Load the saved state on page load
 document.addEventListener('DOMContentLoaded', () => {
-    chrome.storage.sync.get(['disableShorts'], (data) => {
-      document.getElementById('disableShorts').checked = data.disableShorts;
-    });
+  const disableShortsCheckbox = document.getElementById('disableShorts');
+
+  chrome.storage.sync.get(['disableShorts'], (result) => {
+      disableShortsCheckbox.checked = result.disableShorts || false;
   });
-  
-  document.getElementById('saveButton').addEventListener('click', () => {
-    const disableShorts = document.getElementById('disableShorts').checked;
-    chrome.storage.sync.set({ disableShorts: disableShorts }, () => {
-      alert('Settings saved!');
-    });
+
+  // Save user preference when checkbox is changed
+  disableShortsCheckbox.addEventListener('change', () => {
+      const isChecked = disableShortsCheckbox.checked;
+      chrome.storage.sync.set({ disableShorts: isChecked });
   });
-  
+});

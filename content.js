@@ -1,33 +1,59 @@
 // content.js
 
-// Function to hide YouTube Shorts
-function hideShorts() {
-  chrome.storage.sync.get(['disableShorts'], function (data) {
-    if (data.disableShorts) {
-      // Hide Shorts in the main content
-      const sectionRenderers = document.querySelectorAll('ytd-rich-section-renderer');
-      sectionRenderers.forEach(section => {
-        const contentDiv = section.querySelector('#content');
-        if (contentDiv) {
-          const shortsContainers = contentDiv.querySelectorAll('#dismissible');
-          shortsContainers.forEach(container => {
-            container.style.display = 'none';
-          });
-        }
+// Function to hide or show Shorts sections based on user preference
+function toggleShorts(hide) {
+  // Hide or show Shorts section on the homepage
+  const shortsSections = document.querySelectorAll('ytd-rich-shelf-renderer');
+  shortsSections.forEach(section => {
+      const dismissibleDivs = section.querySelectorAll('#dismissible');
+      dismissibleDivs.forEach(div => {
+          div.style.display = hide ? 'none' : '';
       });
+  });
 
-      // Hide Shorts in the sidebar
-      const sidebarShortsButton = document.querySelector('#items > ytd-guide-entry-renderer:nth-child(2)');
-      if (sidebarShortsButton) {
-        sidebarShortsButton.style.display = 'none'; // Hide the Shorts button
+  // Hide or show Shorts button in the sidebar
+  const shortsButton = document.querySelector('#items > ytd-guide-entry-renderer:nth-child(2)');
+  if (shortsButton) {
+      shortsButton.style.display = hide ? 'none' : '';
+  }
+
+  // Redirect if the user is watching a Shorts video, or do nothing based on preference
+  const url = window.location.href;
+  if (url.includes('/shorts') && hide) {
+      window.location.href = 'https://www.youtube.com/';
+  }
+
+  // Hide or show Shorts from suggested videos on a regular video page
+  if (url.includes('/watch')) {
+      const suggestedShorts = document.querySelector('#contents > ytd-reel-shelf-renderer');
+      if (suggestedShorts) {
+          suggestedShorts.style.display = hide ? 'none' : '';
       }
-    }
+  }
+}
+
+// Function to handle user preferences
+function applyUserPreferences() {
+  chrome.storage.sync.get(['disableShorts'], (result) => {
+      const hideShorts = result.disableShorts || false;
+      toggleShorts(hideShorts);
   });
 }
 
-// Apply filter on page load
-hideShorts();
+// Function to handle mutations (for dynamically loaded content)
+function observeMutations() {
+  const observer = new MutationObserver(() => {
+      applyUserPreferences();
+  });
 
-// Observe changes to apply filter on dynamic content
-const observer = new MutationObserver(hideShorts);
-observer.observe(document.body, { childList: true, subtree: true });
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
+// Function to handle page load
+function handlePageLoad() {
+  applyUserPreferences();
+  observeMutations(); // Keep checking for dynamically loaded content
+}
+
+// Run on page load
+window.addEventListener('load', handlePageLoad);
