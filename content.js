@@ -1,8 +1,8 @@
 // content.js
 
-// Function to hide or show Shorts sections based on user preference
+// Function to hide Shorts sections based on user preference
 function toggleShorts(hide) {
-  // Hide or show Shorts section on the homepage
+  // Hide or show Shorts section on the homepage and search results
   const shortsSections = document.querySelectorAll('ytd-rich-shelf-renderer');
   shortsSections.forEach(section => {
       const dismissibleDivs = section.querySelectorAll('#dismissible');
@@ -17,7 +17,7 @@ function toggleShorts(hide) {
       shortsButton.style.display = hide ? 'none' : '';
   }
 
-  // Redirect if the user is watching a Shorts video, or do nothing based on preference
+  // Redirect if the user is watching a Shorts video
   const url = window.location.href;
   if (url.includes('/shorts') && hide) {
       window.location.href = 'https://www.youtube.com/';
@@ -25,10 +25,18 @@ function toggleShorts(hide) {
 
   // Hide or show Shorts from suggested videos on a regular video page
   if (url.includes('/watch')) {
-      const suggestedShorts = document.querySelector('#contents > ytd-reel-shelf-renderer');
-      if (suggestedShorts) {
-          suggestedShorts.style.display = hide ? 'none' : '';
-      }
+      const suggestedShorts = document.querySelectorAll('#contents > ytd-reel-shelf-renderer');
+      suggestedShorts.forEach(shorts => {
+          shorts.style.display = hide ? 'none' : '';
+      });
+  }
+
+  // Hide or show Shorts in search results
+  if (url.includes('/results')) {
+      const searchShorts = document.querySelectorAll('#contents > ytd-reel-shelf-renderer');
+      searchShorts.forEach(shorts => {
+          shorts.style.display = hide ? 'none' : '';
+      });
   }
 }
 
@@ -46,7 +54,10 @@ function observeMutations() {
       applyUserPreferences();
   });
 
-  observer.observe(document.body, { childList: true, subtree: true });
+  observer.observe(document.body, {
+      childList: true,
+      subtree: true
+  });
 }
 
 // Function to handle page load
